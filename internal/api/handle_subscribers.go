@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -168,9 +169,17 @@ func (s *Server) handleSubscriberEndpointList() http.HandlerFunc {
 			return
 		}
 
-		endpoints, err := s.store.ListEndpoints(r.Context(), database.ListEndpointsParams{
+		params := database.ListEndpointsParams{
 			SubscriberID: sub.ID,
-		})
+		}
+		if disabledStr := r.URL.Query().Get("disabled"); disabledStr != "" {
+			disabled, err := strconv.ParseBool(disabledStr)
+			if err == nil {
+				params.Disabled = &disabled
+			}
+		}
+
+		endpoints, err := s.store.ListEndpoints(r.Context(), params)
 		if err != nil {
 			s.serverError(w, r, err)
 			return
