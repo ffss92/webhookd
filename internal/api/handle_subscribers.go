@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -94,23 +93,7 @@ func (s *Server) handleSubscriberCreate() http.HandlerFunc {
 
 func (s *Server) handleSubscriberDetail() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		subID, err := uuidParam(r, "subID")
-		if err != nil {
-			s.notFound(w, r)
-			return
-		}
-
-		sub, err := s.store.GetSubscriber(r.Context(), subID)
-		if err != nil {
-			switch {
-			case errors.Is(err, database.ErrNotFound):
-				s.notFound(w, r)
-			default:
-				s.serverError(w, r, err)
-			}
-			return
-		}
-
+		sub := getSubscriber(r.Context())
 		res, err := mapSubscriber(sub)
 		if err != nil {
 			s.serverError(w, r, err)
@@ -123,24 +106,8 @@ func (s *Server) handleSubscriberDetail() http.HandlerFunc {
 
 func (s *Server) handleSubscriberDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		subID, err := uuidParam(r, "subID")
-		if err != nil {
-			s.notFound(w, r)
-			return
-		}
-
-		sub, err := s.store.GetSubscriber(r.Context(), subID)
-		if err != nil {
-			switch {
-			case errors.Is(err, database.ErrNotFound):
-				s.notFound(w, r)
-			default:
-				s.serverError(w, r, err)
-			}
-			return
-		}
-
-		err = s.store.DeleteSubscriber(r.Context(), sub.ID)
+		sub := getSubscriber(r.Context())
+		err := s.store.DeleteSubscriber(r.Context(), sub.ID)
 		if err != nil {
 			s.serverError(w, r, err)
 			return
@@ -152,22 +119,7 @@ func (s *Server) handleSubscriberDelete() http.HandlerFunc {
 
 func (s *Server) handleSubscriberEndpointList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		subID, err := uuidParam(r, "subID")
-		if err != nil {
-			s.notFound(w, r)
-			return
-		}
-
-		sub, err := s.store.GetSubscriber(r.Context(), subID)
-		if err != nil {
-			switch {
-			case errors.Is(err, database.ErrNotFound):
-				s.notFound(w, r)
-			default:
-				s.serverError(w, r, err)
-			}
-			return
-		}
+		sub := getSubscriber(r.Context())
 
 		params := database.ListEndpointsParams{
 			SubscriberID: sub.ID,

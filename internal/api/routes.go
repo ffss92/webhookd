@@ -11,9 +11,13 @@ func (s *Server) Routes() http.Handler {
 
 	r.Route("/api/v1/subscribers", func(r chi.Router) {
 		r.Post("/", s.handleSubscriberCreate())
-		r.Get("/{subID}", s.handleSubscriberDetail())
-		r.Delete("/{subID}", s.handleSubscriberDelete())
-		r.Get("/{subID}/endpoints", s.handleSubscriberEndpointList())
+
+		r.Route("/{subID}", func(r chi.Router) {
+			r.Use(s.withSubscriber)
+			r.Get("/", s.handleSubscriberDetail())
+			r.Delete("/", s.handleSubscriberDelete())
+			r.Get("/endpoints", s.handleSubscriberEndpointList())
+		})
 	})
 
 	r.Route("/api/v1/endpoints", func(r chi.Router) {

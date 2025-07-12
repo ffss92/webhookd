@@ -121,6 +121,11 @@ func TestHandleSubscriberDetail(t *testing.T) {
 			subID:  uuid.NewString(),
 			status: http.StatusNotFound,
 		},
+		{
+			name:   "invalid id",
+			subID:  "foo",
+			status: http.StatusNotFound,
+		},
 	}
 
 	for _, tt := range testCases {
